@@ -12,7 +12,7 @@ import RxSwift
 import RxCocoa
 
 extension ObservableType {
-    func subscribeProxyDataSource<DelegateProxy: DelegateProxyType>(ofObject object: DelegateProxy.ParentObject, dataSource: DelegateProxy.Delegate, retainDataSource: Bool, binding: @escaping (DelegateProxy, Event<E>) -> Void)
+    func subscribeProxyDataSource<DelegateProxy: DelegateProxyType>(ofObject object: DelegateProxy.ParentObject, dataSource: DelegateProxy.Delegate, retainDataSource: Bool, binding: @escaping (DelegateProxy, Event<Element>) -> Void)
         -> Disposable
         where DelegateProxy.ParentObject: ASDisplayNode {
 
@@ -25,7 +25,7 @@ extension ObservableType {
             )
             
             // this is needed to flush any delayed old state (https://github.com/RxSwiftCommunity/RxDataSources/pull/75)
-            object.layoutIfNeeded()
+            object.setNeedsLayout()
 
             let subscription = self.asObservable()
                 .observeOn(MainScheduler())
@@ -36,7 +36,7 @@ extension ObservableType {
                 // source can never end, otherwise it would release the subscriber, and deallocate the data source
                 .concat(Observable.never())
                 .takeUntil(object.rx.deallocated)
-                .subscribe { [weak object] (event: RxSwift.Event<E>) in
+                .subscribe { [weak object] (event: RxSwift.Event<Element>) in
                     
                     if let object = object {
                         // TODO: Enable assert again to prevent Proxy changed
@@ -59,7 +59,7 @@ extension ObservableType {
 
             return Disposables.create { [weak object] in
                 subscription.dispose()
-                object?.layoutIfNeeded()
+                object?.setNeedsLayout()
                 unregisterDelegate.dispose()
             }
     }

@@ -11,3 +11,14 @@ target 'Example' do
   pod 'Differentiator'
 
 end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    if target.name == 'PINCache' || target.name == 'PINOperation' || target.name == 'PINRemoteImage' then
+      target.build_configurations.each do |configuration|
+        configuration.build_settings['OTHER_CFLAGS'] = '-Xclang -fcompatibility-qualified-id-block-type-checking'
+      end
+    end
+  end
+    
+end
